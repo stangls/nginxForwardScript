@@ -1,0 +1,32 @@
+
+				upstream upstream_anExample {
+					# send requests from single ips to a single backend server
+					ip_hash;
+					# backends
+					server exampleVM;
+					server exampleVM2:8080;
+
+				}
+				server {
+					listen 80 default_server default;
+					server_name example.de www.example.de example.eu www.example.eu;
+					access_log  /var/log/nginx/access_loadbalancing_anExample.log;
+					error_log  /var/log/nginx/error_loadbalancing_anExample.log;
+
+					location / {
+						proxy_pass  http://upstream_anExample;
+						proxy_next_upstream error invalid_header timeout http_502 http_504;
+						proxy_redirect off;
+						proxy_set_header   Host             $host;
+						proxy_set_header   X-Real-IP        $remote_addr;
+						proxy_set_header   X-Forwarded-For  $proxy_add_x_forwarded_for;
+						client_max_body_size       32m;
+						client_body_buffer_size    1m;
+						proxy_connect_timeout      3; # timeout for connection to backend
+						proxy_send_timeout         5; # timeout between write-requests of a single connection
+						proxy_read_timeout         120;
+
+					}
+
+				}
+			

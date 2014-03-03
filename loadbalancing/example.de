@@ -1,0 +1,42 @@
+
+### configuration of a backend
+
+### name of the backend. internal name for generated nginx configs. no spaces or special chars please!
+name=anExample
+
+### this is the default backend?
+### i.e. if no domain/backend is suitable for a request, it will go to this backend.
+default=true
+
+### maintenance mode: serve a specific static file from directory "static"
+### with http status code 503
+#staticSite=update.html
+
+### enable fallback to other backends in case of 404 (not tested, code is not from me, it's from Felix Emmert)
+### if enabled, you must speify appropriate fallback backends below for HTTP and/or HTTPs!
+#enable404Fallback=true
+
+### space-seperated list of frontend domain-names
+domains='example.de www.example.de example.eu www.example.eu'
+
+### space-seperated list of backend servers HOST:PORT or HOST accepting http
+### leave empty to disable http backends
+backendsHttp='exampleVM exampleVM2:8080'
+#backendsHttpFallback='exampleVM_fallback'
+### forward cleint from HTTP to HTTPs without asking the backend
+#forwardHttp2Https=true
+
+### space-seperated list of backend servers HOST:PORT or HOST accepting https
+### leave empty to disable https backends
+#backendsHttps='exampleVM exampleVM2:8090'
+#backendsHttpFallback='exampleVM_fallback'
+### forward cleint from HTTPs to HTTP without asking the backend
+#forwardHttps2Http=true
+### https backends accept only http-requests, so externally we have https internally we use http
+### in some cases (e.g. wordpress) this may not work properly
+httpsInternalHttp=true
+
+### login required for this domain?
+#login=myUser
+#password=myPassword
+
