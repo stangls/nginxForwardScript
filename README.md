@@ -4,7 +4,7 @@ nginxForwardScript
 Automatic generation of reverse-proxy configurations for complex clusters of web-servers.
 The basic idea is to reverse-proxy single domains to a bunch of backend VMs while making use of nginx build in loadbalancing mechanisms.
 
-Probably works on debian only!!!
+Probably works on debian only. Minor changes may be required to run on different platforms.
 
 
 Usage:
