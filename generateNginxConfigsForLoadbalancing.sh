@@ -44,7 +44,8 @@ for i in loadbalancing/*; do
     backendsHttpFallback=""; backendsHttpsFallback=""
 	forwardHttp2Https=false; forwardHttps2Http=false
 	httpsInternalHttp=false
-    enable404Fallback=false
+    enableFallback=false
+    fallbackErrorCodes=""
 	login=""; password=""; authFile=""
 	disabled=""; staticSite=""
 
@@ -85,8 +86,12 @@ for i in loadbalancing/*; do
 		echo "ERROR: both forward http⇒https and https⇒http enabled. are you crazy?? skipping $i ..." 
 		continue;
 	fi
-    if $enable404Fallback && ( ( [ "$backendsHttp" != "" ] && [ "$backendsHttpFallback" = "" ] ) || ( [ "$backendsHttps" != "" ] && [ "$backendsHttpsFallback" = "" ] ) ); then
-        echo "ERROR: 404Fallback is enabled but not all required backends are configured. skipping $i ..."
+    if $enableFallback && [ "$fallbackErrorCodes" = "" ]; then
+        echo "ERROR: Fallback is enabled but no error codes for fallback are defined. skipping $i ..."
+        continue;
+    fi
+    if $enableFallback && ( ( [ "$backendsHttp" != "" ] && [ "$backendsHttpFallback" = "" ] ) || ( [ "$backendsHttps" != "" ] && [ "$backendsHttpsFallback" = "" ] ) ); then
+        echo "ERROR: Fallback is enabled but not all required backends are configured. skipping $i ..."
         continue;
     fi
 
@@ -144,7 +149,7 @@ for i in loadbalancing/*; do
 					server_name $domains;
 					access_log  /var/log/nginx/access_$fname.log;
 					error_log  /var/log/nginx/error_$fname.log;"
-            if $enable404Fallback; then
+            if $enableFallback; then
                 echo "                    recursive_error_pages on;
                     proxy_intercept_errors on;"
             fi
@@ -190,12 +195,12 @@ for i in loadbalancing/*; do
 						echo "					    auth_basic \"Please authenticate for $name\";"
 						echo "					    auth_basic_user_file	$authFile;"
 					fi
-					if $enable404Fallback; then
-						echo "					    error_page 404 = @fallback;"
+					if $enableFallback; then
+						echo "					    error_page $fallbackErrorCodes = @fallback;"
 					fi
 				echo "
 					}"
-                if $enable404Fallback; then
+                if $enableFallback; then
 				    echo "
 				    location @fallback {
 				    	proxy_pass  http://upstream_${name}_fallback;
@@ -287,7 +292,7 @@ for i in loadbalancing/*; do
 					add_header       X-Forwarded-Ssl	on;
 					add_header       X-Forwarded-Proto	https;
 					add_header       X-Forwarded-Port	443;"
-            if $enable404Fallback; then
+            if $enableFallback; then
                 echo "                    recursive_error_pages on;
                     proxy_intercept_errors on;"
             fi
@@ -333,12 +338,12 @@ for i in loadbalancing/*; do
 						echo "					    auth_basic \"Please authenticate for $name\";"
 						echo "					    auth_basic_user_file	$authFile;"
 					fi
-					if $enable404Fallback; then
-						echo "					    error_page 404 = @fallback;"
+					if $enableFallback; then
+						echo "					    error_page $fallbackErrorCodes = @fallback;"
 					fi
 					echo "
 					}"
-                if $enable404Fallback; then
+                if $enableFallback; then
 				    echo "
 				    location @fallback {
 					    proxy_pass  http$( $httpsInternalHttp || echo -n s )://upstreamSecure_${name}_fallback;
