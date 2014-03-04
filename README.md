@@ -16,5 +16,6 @@ Usage:
   * adapt to your needs or create more configs in the loadbalancing directory. each config represents one (sub)domain
 * execute ./generateNginxConfigsForLoadbalancing.sh
 * take a look at the generated sites-available
+* reload nginx ( on debian: service nginx reload )
 
 If you want to use HTTP-authentication, you may want to install htpasswd from the apache2-utils package, or change the way the htpasswd_* files are created in the script.
