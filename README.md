@@ -13,7 +13,7 @@ Usage:
   * if you don't know what you are doing, then don't do it
 * look at the example configuration in loadbalancing/example.de
   * the comments in the example should be self-explaining. if not, feel free to tell me.
-  * adapt to your needs or create more configs in the loadbalancing directory
+  * adapt to your needs or create more configs in the loadbalancing directory. each config represents one (sub)domain
 * execute ./generateNginxConfigsForLoadbalancing.sh
 * take a look at the generated sites-available
 
