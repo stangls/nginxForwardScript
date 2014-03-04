@@ -12,9 +12,10 @@ default=true
 ### with http status code 503
 #staticSite=update.html
 
-### enable fallback to other backends in case of 404 (not tested, code is not from me, it's from Felix Emmert)
+### enable fallback to other backends in case of errors specified in fallbackErrorCodes (not tested, code is not from me, it's from Felix Emmert)
 ### if enabled, you must speify appropriate fallback backends below for HTTP and/or HTTPs!
-#enable404Fallback=true
+#enableFallback=true
+#fallbackErrorCodes="404 503"
 
 ### space-seperated list of frontend domain-names
 domains='example.de www.example.de example.eu www.example.eu'
