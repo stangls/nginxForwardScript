@@ -43,6 +43,7 @@ for i in loadbalancing/*; do
 	backendsHttp=""; backendsHttps=""
     backendsHttpFallback=""; backendsHttpsFallback=""
 	forwardHttp2Https=false; forwardHttps2Http=false
+    forwardHttp=""; forwardHttps="";
 	httpsInternalHttp=false
     enableFallback=false
     fallbackErrorCodes=""
@@ -78,7 +79,7 @@ for i in loadbalancing/*; do
 		echo "ERROR: no domains specfied for $name. skipping $i"
 		continue;
 	fi
-	if ( [ "$backendsHttp" = "" ] || $forwardHttp2Https ) && ( [ "$backendsHttps" = "" ] || $forwardHttps2Http ); then
+    if ( ( [ "$backendsHttp" = "" ] && [ "$forwardHttp" = "" ] ) || $forwardHttp2Https ) && ( ( [ "$backendsHttps" = "" ] && [ "$forwardHttps" = "" ] ) || $forwardHttps2Http ); then
 		echo "ERROR: neither http or https backend for $name. what do you actually want? skipping $i ..." 
 		continue;
 	fi
@@ -86,6 +87,18 @@ for i in loadbalancing/*; do
 		echo "ERROR: both forward http⇒https and https⇒http enabled. are you crazy?? skipping $i ..." 
 		continue;
 	fi
+    if $forwardHttp2Https && [ "$forwardHttp" != "" ]; then
+        echo "ERROR: you have forwardHttp2Https and forwardHttp enabled. Not sure what to do... skipping $i ..."
+        continue;
+    fi
+    if $forwardHttps2Http && [ "$forwardHttps" != "" ]; then
+        echo "ERROR: you have forwardHttps2Http and forwardHttps enabled. Not sure what to do... skipping $i ..."
+        continue;
+    fi
+    if $default && [ "$forwardHttps" != "" ]; then
+        echo "ERROR: sorry, but wildcard forwarding doesn't work with ssl... skipping $i ..."
+        continue;
+    fi
     if $enableFallback && [ "$fallbackErrorCodes" = "" ]; then
         echo "ERROR: Fallback is enabled but no error codes for fallback are defined. skipping $i ..."
         continue;
@@ -234,6 +247,15 @@ for i in loadbalancing/*; do
 					server_name $domains;
 					rewrite		^	https://\$server_name\$request_uri? permanent;
 				}"
+        elif [ -n "$forwardHttp" ]; then
+			echo "
+				server {
+					listen 80"$( $default && echo ' default_server default' )";
+					access_log  /var/log/nginx/access_$fname.log;
+					error_log  /var/log/nginx/error_$fname.log;
+					server_name $domains;
+					rewrite		^	${forwardHttp}\$request_uri? permanent;
+				}"
 		fi
 
 		# https part
@@ -379,6 +401,18 @@ for i in loadbalancing/*; do
 					#ssl_client_certificate  "/etc/ssl/private/CA-bundle.pem";
 					server_name $domains;
 					rewrite		^	http://\$server_name\$request_uri? permanent;
+				}"
+        elif [ -n "$forwardHttps" ]; then
+			echo "
+				server {
+					listen 443;
+					access_log  /var/log/nginx/access_$fname.log;
+					error_log  /var/log/nginx/error_$fname.log;
+					ssl_certificate		"/etc/ssl/private/_mibaby_de_bundle.pem";
+					ssl_certificate_key	"/etc/ssl/private/_mibaby_de.pem";
+					#ssl_client_certificate  "/etc/ssl/private/CA-bundle.pem";
+					server_name $domains;
+					rewrite		^	${forwardHttps}\$request_uri? permanent;
 				}"
 		fi
 	} > sites-available/$fname

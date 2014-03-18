@@ -20,6 +20,10 @@ default=true
 ### space-seperated list of frontend domain-names
 domains='example.de www.example.de example.eu www.example.eu'
 
+# forward to a specific domain via 301
+#forwardHttp='http://www.example.de'
+#forwardHttps='https://www.example.de'
+
 ### space-seperated list of backend servers HOST:PORT or HOST accepting http
 ### leave empty to disable http backends
 backendsHttp='exampleVM exampleVM2:8080'
